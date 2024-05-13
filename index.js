@@ -5,7 +5,18 @@ require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000
 
+// const corsOptions = {
+//   origin: [
+//     'http://localhost:5173',
+//     'http://localhost:5174',
+//     'https://aspirant-blog.web.app',
+//   ],
+//   credentials: true,
+//   optionSuccessStatus: 200,
+// }
+
 // middleware
+// app.use(cors(corsOptions))
 app.use(cors())
 app.use(express.json())
 
@@ -27,14 +38,44 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect()
 
-    // const serviceCollection = client.db('carDoctor').collection('services')
-    // const bookingCollection = client.db('carDoctor').collection('bookings')
+    const blogsCollection = client
+      .db('All-Blogs')
+      .collection('blogs-by-category-search')
 
-    // app.get('/services', async (req, res) => {
-    //   const cursor = serviceCollection.find()
-    //   const result = await cursor.toArray()
-    //   res.send(result)
-    // })
+    app.get('/allBlogs', async (req, res) => {
+      // console.log(req.query)
+      // console.log(req.query.email)
+
+      console.log(req.body)
+
+      let query = {}
+      if (req.query?.category) {
+        query = { category: req.query.category }
+      }
+      // if (req.query?.email) {
+      //   query = { email: req.query.email }
+      // }
+
+      const cursor = blogsCollection.find(query)
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+    app.get('/allBlogs/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await blogsCollection.findOne(query)
+      res.send(result)
+    })
+
+    // api end point to search blog by category
+    // app.get('/allBlogs', async (req, res) => {})
+
+    app.post('/addBlog', async (req, res) => {
+      const blog = req.body
+      const result = await blogsCollection.insertOne(blog)
+      res.send(result)
+    })
 
     // app.get('/services/:id', async (req, res) => {
     //   const id = req.params.id
@@ -101,9 +142,9 @@ async function run() {
 run().catch(console.dir)
 
 app.get('/', (req, res) => {
-  res.send('doctor is running')
+  res.send('My Server is running ...')
 })
 
 app.listen(port, () => {
-  console.log(`Car Doctor Server is running on port ${port}`)
+  console.log(`My Project Server is running on port ${port}`)
 })
