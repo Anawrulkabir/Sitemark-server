@@ -43,22 +43,26 @@ async function run() {
       .collection('blogs-by-category-search')
 
     app.get('/allBlogs', async (req, res) => {
-      // console.log(req.query)
-      // console.log(req.query.email)
-
-      console.log(req.body)
-
+      const limit = req.query._limit ? parseInt(req.query._limit) : undefined
       let query = {}
       if (req.query?.category) {
         query = { category: req.query.category }
       }
-      // if (req.query?.email) {
-      //   query = { email: req.query.email }
-      // }
+      console.log(req.query)
+
+      if (req.query?.title) {
+        query = { title: req.query.title }
+      }
 
       const cursor = blogsCollection.find(query)
-      const result = await cursor.toArray()
-      res.send(result)
+      const allBlogs = await cursor.toArray()
+
+      let results = allBlogs
+      if (limit !== undefined) {
+        results = allBlogs.slice(0, limit) // Limit the results to the specified number
+      }
+
+      res.send(results)
     })
 
     app.get('/allBlogs/:id', async (req, res) => {
@@ -68,11 +72,10 @@ async function run() {
       res.send(result)
     })
 
-    // api end point to search blog by category
-    // app.get('/allBlogs', async (req, res) => {})
-
     app.post('/addBlog', async (req, res) => {
       const blog = req.body
+      console.log(blog)
+      return
       const result = await blogsCollection.insertOne(blog)
       res.send(result)
     })
