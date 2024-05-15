@@ -42,6 +42,10 @@ async function run() {
       .db('All-Blogs')
       .collection('blogs-by-category-search')
 
+    const featuredBlogCollection = client
+      .db('All-Blogs')
+      .collection('wishlist-items')
+
     app.get('/allBlogs', async (req, res) => {
       const limit = req.query._limit ? parseInt(req.query._limit) : undefined
       let query = {}
@@ -75,8 +79,23 @@ async function run() {
     app.post('/addBlog', async (req, res) => {
       const blog = req.body
       console.log(blog)
-      return
       const result = await blogsCollection.insertOne(blog)
+      res.send(result)
+    })
+
+    app.post('/addToWishList', async (req, res) => {
+      const item = req.body
+      const result = await featuredBlogCollection.insertOne(item)
+      res.send(result)
+    })
+
+    app.get('/wishListBlogs', async (req, res) => {
+      const result = await featuredBlogCollection.find().toArray()
+      res.send(result)
+    })
+    app.delete('/wishListBlogs/:id', async (req, res) => {
+      const id = req.params.id
+      const result = await featuredBlogCollection.deleteOne(id).toArray()
       res.send(result)
     })
 
