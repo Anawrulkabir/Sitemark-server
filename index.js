@@ -45,6 +45,9 @@ async function run() {
     const featuredBlogCollection = client
       .db('All-Blogs')
       .collection('wishlist-items')
+    const userCommentsCollection = client
+      .db('All-Blogs')
+      .collection('user-comments')
 
     app.get('/allBlogs', async (req, res) => {
       const limit = req.query._limit ? parseInt(req.query._limit) : undefined
@@ -95,7 +98,26 @@ async function run() {
     })
     app.delete('/wishListBlogs/:id', async (req, res) => {
       const id = req.params.id
-      const result = await featuredBlogCollection.deleteOne(id).toArray()
+      console.log(id)
+      const query = { _id: new ObjectId(id) }
+      const result = await featuredBlogCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    // comments
+    app.post('/comments', async (req, res) => {
+      const comment = req.body
+      const result = await userCommentsCollection.insertOne(comment).toArray()
+      res.send(result)
+    })
+
+    app.get('/comments', async (req, res) => {
+      let query = {}
+      if (req.query?.blogId) {
+        query = { blogId: req.query?.blogId }
+      }
+      const result = await userCommentsCollection.find(query).toArray()
+
       res.send(result)
     })
 
